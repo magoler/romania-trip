@@ -296,7 +296,7 @@ const PW_HASH="4afcf78d12961e97e8739e3f9159c1add75db0bd87b966ba4ed023053d46c090"
 async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 function reveal(){document.getElementById('gate').style.display='none';
-  document.getElementById('app').style.display='';init();}
+  document.getElementById('app').style.display='block';init();}
 async function tryUnlock(){const i=document.getElementById('pw');
   if(await sha256(i.value.trim())===PW_HASH){localStorage.setItem('ro_ok','1');reveal();}
   else{document.getElementById('pwerr').style.display='block';i.value='';i.focus();}}
