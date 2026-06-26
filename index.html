@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>טיול לרומניה · 8–18 ביולי</title>
+<meta name="theme-color" content="#7a1f2b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root{
+    --wine:#7a1f2b; --wine-dark:#5c151f; --gold:#c79a3a; --cream:#fbf6ee;
+    --ink:#2b2622; --muted:#6f655c; --line:#e7ddcf; --card:#ffffff;
+    --blue:#1f6fb2; --green:#3a8a4f; --shadow:0 6px 22px rgba(60,40,20,.10);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; font-family:"Heebo",system-ui,Arial,sans-serif; color:var(--ink);
+    background:var(--cream); font-size:18px; line-height:1.65; -webkit-text-size-adjust:100%;}
+  img{max-width:100%; display:block}
+  a{color:inherit}
+  .hero{position:relative; color:#fff; text-align:center; padding:54px 20px 46px;
+    background:linear-gradient(135deg,var(--wine) 0%,var(--wine-dark) 100%); overflow:hidden;}
+  .hero::after{content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 20% 20%, rgba(199,154,58,.25), transparent 45%);}
+  .hero h1{position:relative; margin:0; font-size:2.5rem; font-weight:900; letter-spacing:-.5px}
+  .hero .sub{position:relative; margin-top:10px; font-size:1.25rem; opacity:.95; font-weight:500}
+  .hero .flag{position:relative; font-size:2rem; margin-bottom:6px}
+  .hero .chips{position:relative; margin-top:18px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
+  .hero .chip{background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.25);
+    padding:6px 14px; border-radius:999px; font-size:.95rem; font-weight:500}
+  .daynav{position:sticky; top:0; z-index:900; background:rgba(251,246,238,.96);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:10px 0;}
+  .daynav .scroll{display:flex; gap:8px; overflow-x:auto; padding:0 14px; scrollbar-width:none}
+  .daynav .scroll::-webkit-scrollbar{display:none}
+  .daynav a{flex:0 0 auto; text-decoration:none; background:#fff; border:1.5px solid var(--line);
+    color:var(--wine); font-weight:700; border-radius:12px; padding:7px 13px; font-size:.95rem;
+    display:flex; flex-direction:column; align-items:center; min-width:62px; line-height:1.2}
+  .daynav a small{font-weight:500; color:var(--muted); font-size:.72rem}
+  .daynav a.overview{color:var(--ink)}
+  .wrap{max-width:920px; margin:0 auto; padding:0 14px}
+  .day{margin:26px 0; background:var(--card); border-radius:20px; box-shadow:var(--shadow);
+    overflow:hidden; scroll-margin-top:84px}
+  .day-head{position:relative; color:#fff; padding:20px; min-height:150px;
+    display:flex; flex-direction:column; justify-content:flex-end}
+  .day-head img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0}
+  .day-head::after{content:""; position:absolute; inset:0; z-index:1;
+    background:linear-gradient(180deg, rgba(40,20,15,.15) 0%, rgba(50,20,15,.78) 100%)}
+  .day-head .txt{position:relative; z-index:2}
+  .day-badge{display:inline-block; background:var(--gold); color:#3a2a00; font-weight:800;
+    border-radius:8px; padding:3px 11px; font-size:.9rem; margin-bottom:8px}
+  .day-head h2{margin:0; font-size:1.55rem; font-weight:900; text-shadow:0 1px 6px rgba(0,0,0,.4)}
+  .day-body{padding:16px 16px 20px}
+  .summary{background:#faf3e6; border-right:4px solid var(--gold); border-radius:10px;
+    padding:11px 14px; margin:0 0 14px; color:#5b4a2c; font-weight:500}
+  .note{background:#eef5fb; border-right:4px solid var(--blue); border-radius:10px;
+    padding:11px 14px; margin:14px 0 4px; font-size:.96rem}
+  .note b{color:var(--blue)}
+  .map{height:300px; border-radius:14px; margin:6px 0 16px; border:1px solid var(--line); z-index:0}
+  .stops{display:flex; flex-direction:column; gap:14px}
+  .stop{display:flex; gap:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden; background:#fff}
+  .stop .num{flex:0 0 38px; background:var(--wine); color:#fff; font-weight:800; font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center}
+  .stop .body{flex:1; padding:12px 6px 12px 12px; min-width:0}
+  .stop .title{font-weight:800; font-size:1.15rem; display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+  .stop .orig{color:var(--muted); font-weight:500; font-size:.88rem; direction:ltr; unicode-bidi:embed}
+  .stop .tag{font-size:.72rem; font-weight:700; padding:2px 9px; border-radius:999px}
+  .tag.hotel{background:#e9f3ec; color:var(--green)}
+  .tag.food{background:#fdeede; color:#b9651a}
+  .tag.opt{background:#eef0f3; color:#5a6472}
+  .tag.eve{background:#ece7f6; color:#5b3fa0}
+  .stop .desc{margin:5px 0 10px; color:#473f37}
+  .stop img.photo{width:100%; height:190px; object-fit:cover; border-radius:10px; margin:4px 0 10px; background:#eee}
+  .acts{display:flex; gap:8px; flex-wrap:wrap}
+  .btn{flex:1 1 auto; min-width:92px; text-align:center; text-decoration:none; font-weight:700;
+    border-radius:11px; padding:10px 8px; font-size:.95rem; display:inline-flex; gap:6px;
+    align-items:center; justify-content:center; border:1.5px solid transparent}
+  .btn-waze{background:#33ccff; color:#063b4d}
+  .btn-map{background:#fff; color:var(--blue); border-color:var(--blue)}
+  .btn-pic{background:#fff; color:var(--wine); border-color:var(--wine)}
+  .eat-city{font-weight:800; font-size:1.2rem; color:var(--wine); margin:16px 0 8px}
+  .eat{display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:14px;
+    padding:11px 13px; margin-bottom:10px; background:#fff}
+  .eat .info{flex:1; min-width:0}
+  .eat .info b{font-size:1.05rem}
+  .eat .info span{display:block; color:var(--muted); font-size:.9rem}
+  .eat .mini{flex:0 0 auto; display:flex; gap:6px}
+  .eat .mini a{width:42px; height:42px; border-radius:11px; display:flex; align-items:center;
+    justify-content:center; text-decoration:none; font-size:1.1rem; border:1.5px solid var(--line)}
+  .info-card{background:#fff; border-radius:20px; box-shadow:var(--shadow); padding:18px; margin:26px 0}
+  .info-card h2{margin:0 0 6px; color:var(--wine); font-size:1.5rem}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; margin:10px 0 0; font-size:.9rem; color:var(--muted)}
+  .legend i{display:inline-block; width:22px; height:4px; border-radius:2px; vertical-align:middle; margin-left:5px}
+  footer{text-align:center; color:var(--muted); padding:30px 16px 50px; font-size:.9rem}
+  .top{position:fixed; bottom:18px; left:18px; z-index:950; background:var(--wine); color:#fff;
+    width:50px; height:50px; border-radius:50%; border:none; font-size:1.4rem; box-shadow:var(--shadow);
+    cursor:pointer; opacity:0; pointer-events:none; transition:opacity .25s}
+  .top.show{opacity:1; pointer-events:auto}
+  /* password gate */
+  #gate{position:fixed; inset:0; z-index:2000; padding:24px; display:flex; align-items:center;
+    justify-content:center; background:linear-gradient(135deg,var(--wine),var(--wine-dark));}
+  .gate-box{background:#fff; border-radius:22px; padding:34px 26px; width:100%; max-width:360px;
+    text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .gate-box .flag{font-size:2.4rem}
+  .gate-box h1{margin:6px 0 2px; color:var(--wine); font-size:1.55rem; font-weight:900}
+  .gate-box p{margin:0 0 18px; color:var(--muted)}
+  .gate-box input{width:100%; font-size:1.4rem; text-align:center; letter-spacing:.3em; padding:14px;
+    border:2px solid var(--line); border-radius:14px; outline:none; font-family:inherit}
+  .gate-box input:focus{border-color:var(--gold)}
+  .gate-box button{width:100%; margin-top:14px; background:var(--wine); color:#fff; border:none;
+    font-size:1.2rem; font-weight:800; padding:14px; border-radius:14px; cursor:pointer; font-family:inherit}
+  .gate-box .err{display:none; color:#c0392b; margin-top:12px; font-weight:700}
+  #app{display:none}
+  /* mobile */
+  @media(max-width:560px){
+    body{font-size:17px}
+    .hero{padding:40px 16px 34px}
+    .hero h1{font-size:1.95rem}
+    .hero .sub{font-size:1.08rem}
+    .wrap{padding:0 10px}
+    .day{margin:18px 0; border-radius:16px}
+    .day-head{padding:16px; min-height:130px}
+    .day-head h2{font-size:1.35rem}
+    .info-card{padding:14px; border-radius:16px}
+    .map{height:260px}
+    #routemap{height:300px!important}
+    .acts .btn{flex:1 1 100%}
+    .stop .num{flex-basis:32px; font-size:1rem}
+    .stop img.photo{height:170px}
+  }
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-box">
+    <div class="flag">🇷🇴</div>
+    <h1>הטיול שלנו ברומניה</h1>
+    <p>הזינו סיסמה כדי לצפות במדריך</p>
+    <input id="pw" type="password" inputmode="numeric" autocomplete="off" placeholder="סיסמה">
+    <button id="pwbtn">כניסה ←</button>
+    <div id="pwerr" class="err">סיסמה שגויה, נסו שוב</div>
+  </div>
+</div>
+<div id="app">
+<header class="hero">
+  <div class="flag">🇷🇴</div>
+  <h1>הטיול שלנו ברומניה</h1>
+  <div class="sub">8–18 ביולי · 11 ימים · מסע רכב בטרנסילבניה</div>
+  <div class="chips">
+    <span class="chip">בוקרשט</span><span class="chip">סינאיה</span>
+    <span class="chip">בראשוב</span><span class="chip">סיגישוארה</span>
+    <span class="chip">סיביו</span><span class="chip">טרנספגרשאן</span>
+  </div>
+</header>
+<nav class="daynav"><div class="scroll" id="daynav"></div></nav>
+<div class="wrap">
+  <section class="info-card" id="overview">
+    <h2>🗺️ מסלול הטיול</h2>
+    <p style="margin:4px 0 12px;color:var(--muted)">הקו האדום מראה את מסלול הנסיעה בפועל על הכבישים. לחצו על כל יום למטה לפרטים, תמונות וניווט.</p>
+    <div id="routemap" class="map" style="height:360px"></div>
+    <div class="legend"><span><i style="background:#7a1f2b"></i>מסלול הנסיעה</span><span>🔴 ערי הלינה לפי הסדר</span></div>
+    <div class="note"><b>טיפ:</b> בכל מקום יש כפתורי <b>Waze</b> ו־<b>Google Maps</b> שמחפשים את המקום לפי שמו, וכפתור <b>תמונות</b>. אפשר לשמור את האתר במסך הבית בטלפון.</div>
+  </section>
+  <main id="days"></main>
+  <section class="info-card" id="food">
+    <h2>🥗 מסעדות טבעוניות מומלצות</h2>
+    <p style="margin:4px 0 0;color:var(--muted)">לאורך הציר סינאיה–בראשוב–סיביו. לחצו על האייקונים לניווט או לתמונות.</p>
+    <div id="eateries"></div>
+    <div class="note"><b>טיפ זהב:</b> במסעדות הרומניות תמיד אפשר לבקש אוכל <b>"De Post"</b> — אוכל לימי צום נוצרי, שהוא טבעוני לחלוטין. למשל ב־<b>Cabana Bâlea Lac</b> שעל הטרנספגרשאן יש סרמלה (כרוב ממולא) טבעוני עם ממליגה וזאקוסקה.</div>
+  </section>
+</div>
+<button class="top" id="topbtn" aria-label="חזרה למעלה">↑</button>
+<footer>בנסיעה טובה ובטוחה 💛 · נבנה באהבה למסע ברומניה</footer>
+</div><!-- /app -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const DAYS=[{"n": 1, "date": "08.07", "dow": "רביעי", "title": "נחיתה בבוקרשט", "hero": "parliament", "summary": "נחיתה ב־21:10, איסוף כרטיס SIM, צ׳ק־אין במלון וארוחת ערב.", "note": "דוכן הסים של <b>Sixt</b> נמצא ביציאה מאזור המזוודות — 50 מטר הליכה מצד ימין.", "stops": [{"t": "נמל התעופה בוקרשט", "o": "Henri Coandă Airport", "ic": "✈️", "d": "נחיתה ב־21:10. אוספים SIM מדוכן Sixt ויוצאים לכיוון המלון.", "q": "Aeroportul Henri Coandă, Otopeni, Romania", "la": 44.5685, "ln": 26.06965, "img": "theme_bucharest.jpg"}, {"t": "מלון Hotel Capitol", "o": "Hotel Capitol Bucharest", "ic": "🏨", "d": "צ׳ק־אין והנחת מזוודות. מיקום מרכזי על שדרת Calea Victoriei.", "q": "Hotel Capitol, Calea Victoriei 29, Bucharest, Romania", "la": 44.43548, "ln": 26.09773, "img": "theme_bucharest.jpg", "tag": "hotel"}]}, {"n": 2, "date": "09.07", "dow": "חמישי", "title": "בוקרשט — סיור רגלי", "hero": "victoriei", "summary": "יום שלם של הליכה במרכז ההיסטורי ובעיר העתיקה של בוקרשט.", "note": "בבוקר אפשר לקפוץ ל־<b>Orange</b> לרכוש 3 כרטיסי SIM. מסעדות מומלצות בסוף העמוד.", "stops": [{"t": "חנות Orange (סימים)", "o": "Orange Shop", "ic": "🛒", "d": "רכישת 3 כרטיסי SIM.", "q": "Orange Shop, Unirea Shopping Center, Bucharest, Romania", "la": 44.428, "ln": 26.101, "img": "theme_bucharest.jpg"}, {"t": "פונדק מאנוק", "o": "Hanul lui Manuc", "ic": "🏛️", "d": "פונדק היסטורי מהמאה ה־19 עם חצר פנימית מקסימה ומסעדה.", "q": "Hanul lui Manuc, Bucharest, Romania", "la": 44.42952, "ln": 26.10184, "img": "theme_bucharest.jpg"}, {"t": "כיכר Unirii", "o": "Piața Unirii", "ic": "📍", "d": "כיכר מרכזית עם נוף מושלם אל ארמון הפרלמנט.", "q": "Piața Unirii, Bucharest, Romania", "la": 44.42801, "ln": 26.10251, "img": "theme_bucharest.jpg"}, {"t": "ארמון הפרלמנט (תצפית)", "o": "Palatul Parlamentului", "ic": "🏛️", "d": "המבנה האזרחי הכבד בעולם — נשקף יפה מכיכר Unirii.", "q": "Palatul Parlamentului, Bucharest, Romania", "la": 44.42751, "ln": 26.08725, "img": "d2_3.jpg"}, {"t": "המרכז ההיסטורי (Lipscani)", "o": "Lipscani", "ic": "🏘️", "d": "רובע הסמטאות העתיק — בתי קפה, חנויות ואווירה.", "q": "Lipscani, Bucharest, Romania", "la": 44.43181, "ln": 26.10158, "img": "d2_4.jpg"}, {"t": "כנסיית Stavropoleos", "o": "Stavropoleos Monastery", "ic": "⛪", "d": "כנסייה אורתודוקסית קטנה ומקסימה מ־1724 עם חצר פנימית.", "q": "Stavropoleos Monastery, Bucharest, Romania", "la": 44.4318, "ln": 26.09871, "img": "d2_5.jpg"}, {"t": "בית הבירה הוותיק (Caru' cu Bere)", "o": "Caru' cu Bere", "ic": "🍺", "d": "פאב הבירה העתיק בעיר — אולם מפואר ומפורסם.", "q": "Caru' cu Bere, Bucharest, Romania", "la": 44.432, "ln": 26.09811, "img": "d2_6.jpg"}, {"t": "המוזיאון הלאומי להיסטוריה", "o": "National Museum of Romanian History", "ic": "🏛️", "d": "אוסף ההיסטוריה של רומניה.", "q": "National Museum of Romanian History, Bucharest, Romania", "la": 44.4312, "ln": 26.098, "img": "theme_bucharest.jpg"}, {"t": "ארמון CEC", "o": "CEC Palace", "ic": "🏛️", "d": "מבנה ראווה עם כיפת זכוכית — אחד היפים בעיר.", "q": "CEC Palace, Bucharest, Romania", "la": 44.43193, "ln": 26.09757, "img": "d2_8.jpg"}, {"t": "הבנק הלאומי של רומניה", "o": "National Bank of Romania", "ic": "🏦", "d": "מבנה ניאו־קלאסי מרשים.", "q": "Palatul Băncii Naționale a României, Bucharest, Romania", "la": 44.43258, "ln": 26.09903, "img": "d2_9.jpg"}, {"t": "פסאז' Macca-Villacrosse", "o": "Pasajul Macca-Villacrosse", "ic": "🏛️", "d": "פסאז' מקורה צהוב ומקסים עם בתי קפה.", "q": "Pasajul Macca-Villacrosse, Bucharest, Romania", "la": 44.43204, "ln": 26.09862, "img": "d2_10.jpg"}, {"t": "שדרת Calea Victoriei", "o": "Calea Victoriei", "ic": "🛣️", "d": "השדרה הראשית ההיסטורית — ארמונות, מוזיאונים ובתי קפה.", "q": "Calea Victoriei, Bucharest, Romania", "la": 44.44884, "ln": 26.08876, "img": "d2_11.jpg"}, {"t": "ארמון הטלפונים", "o": "Palatul Telefoanelor", "ic": "☎️", "d": "גורד שחקים ראשון בעיר בסגנון ארט־דקו.", "q": "Palatul Telefoanelor, Calea Victoriei, Bucharest, Romania", "la": 44.4363, "ln": 26.09746, "img": "theme_bucharest.jpg"}, {"t": "כיכר המהפכה", "o": "Piața Revoluției", "ic": "📍", "d": "כיכר היסטורית — מקום נפילת המשטר הקומוניסטי ב־1989.", "q": "Piața Revoluției, Bucharest, Romania", "la": 44.43866, "ln": 26.0975, "img": "theme_bucharest.jpg"}]}, {"n": 3, "date": "10.07", "dow": "שישי", "title": "בוקרשט ← סינאיה", "hero": "peles", "summary": "בבוקר אוספים רכב, נוסעים לסינאיה ומבקרים בארמון פלש המרהיב.", "note": "", "stops": [{"t": "איסוף רכב — מלון Radisson Blu", "o": "Radisson Blu Hotel Bucharest", "ic": "🚗", "d": "08:30 — לוקחים את הרכב מהמלון ויוצאים צפונה.", "q": "Radisson Blu Hotel, Calea Victoriei 63-81, Bucharest, Romania", "la": 44.44206, "ln": 26.08863, "img": "theme_bucharest.jpg"}, {"t": "מלון Sinaia", "o": "Hotel Sinaia", "ic": "🏨", "d": "נסיעה של 1.5–3 שעות. צ׳ק־אין, ואז Uber לארמון פלש.", "q": "Hotel Sinaia, Sinaia, Romania", "la": 45.35191, "ln": 25.54934, "img": "theme_sinaia.jpg", "tag": "hotel"}, {"t": "ארמון פלש (Peleș)", "o": "Castelul Peleș", "ic": "🏰", "d": "14:30 — ארמון הקיץ המלכותי, אחד היפים באירופה, בלב הקרפטים.", "q": "Castelul Peleș, Sinaia, Romania", "la": 45.36009, "ln": 25.54273, "img": "d3_2.jpg"}, {"t": "שוק המרכולים והשכונה המרכזית", "o": "Sinaia center", "ic": "🛍️", "d": "ירידה לשוק הקטן וטיול רגלי בשכונה המרכזית ליד המלון.", "q": "Sinaia, Romania", "la": 45.34555, "ln": 25.54815, "img": "d3_3.jpg"}]}, {"n": 4, "date": "11.07", "dow": "שבת", "title": "סינאיה ← בראשוב", "hero": "brasov", "summary": "גונדולה אופציונלית בבוקר, נסיעה לבראשוב וסיור בעיר העתיקה היפהפייה.", "note": "לפני העזיבה — להודיע למלון בסינאיה שיצאתם: <b>0040721916868</b>.", "stops": [{"t": "גונדולה סינאיה (אופציונלי)", "o": "Telecabina Sinaia", "ic": "🚠", "d": "עלייה לנוף הרים עד גובה 1400 מ׳ — טיול קליל למעלה.", "q": "Telecabina Sinaia, Sinaia, Romania", "la": 45.34949, "ln": 25.54595, "img": "theme_mountains.jpg", "tag": "opt"}, {"t": "מלון Kronhaus, בראשוב", "o": "Kronhaus Hotel Brasov", "ic": "🏨", "d": "צ׳ק־אין בבראשוב.", "q": "Kronhaus Apartments & Spa, Brașov, Romania", "la": 45.64308, "ln": 25.58883, "img": "theme_brasov.jpg", "tag": "hotel"}, {"t": "כיכר העיר (Piața Sfatului)", "o": "Piața Sfatului", "ic": "📍", "d": "כיכר ימי־ביניימית מרהיבה — לב העיר העתיקה.", "q": "Piața Sfatului, Brașov, Romania", "la": 45.6422, "ln": 25.58922, "img": "theme_brasov.jpg"}, {"t": "הכנסייה השחורה", "o": "Biserica Neagră", "ic": "⛪", "d": "הכנסייה הגותית הגדולה ביותר ברומניה.", "q": "Biserica Neagră, Brașov, Romania", "la": 45.641, "ln": 25.58807, "img": "d4_3.jpg"}, {"t": "הרחוב הצר (Strada Sforii)", "o": "Strada Sforii", "ic": "🚶", "d": "אחד הרחובות הצרים באירופה.", "q": "Strada Sforii, Brașov, Romania", "la": 45.63954, "ln": 25.58859, "img": "d4_4.jpg"}, {"t": "בית הכנסת הגדול", "o": "Sinagoga Brașov", "ic": "🕍", "d": "בית כנסת ניאו־מורי יפהפה.", "q": "Sinagoga Beth Israel, Brașov, Romania", "la": 45.63932, "ln": 25.58785, "img": "theme_brasov.jpg"}, {"t": "מזרקת המים הרוקדת", "o": "Brașov Musical Fountain", "ic": "⛲", "d": "בערב — מופע מים ואורות.", "q": "Fântâna Arteziană, Parcul Nicolae Titulescu, Brașov, Romania", "la": 45.651, "ln": 25.608, "img": "theme_brasov.jpg", "tag": "eve"}, {"t": "ארוחת ערב — La Ceaun", "o": "La Ceaun Brasov", "ic": "🍽️", "d": "אוכל רומני מסורתי בכיכר העיר.", "q": "La Ceaun, Piața Sfatului, Brașov, Romania", "la": 45.64197, "ln": 25.58853, "img": "theme_food.jpg", "tag": "food"}]}, {"n": 5, "date": "12.07", "dow": "ראשון", "title": "בראשוב", "hero": "tampa", "summary": "תצפיות מהר טמפא ומהמגדלים, ובאחר הצהריים קניון וארוחת ערב איטלקית.", "note": "", "stops": [{"t": "הר טמפא (Tâmpa)", "o": "Tâmpa", "ic": "🚠", "d": "עלייה ברגל או ברכבל לנקודת תצפית על העיר.", "q": "Telecabina Tâmpa, Brașov, Romania", "la": 45.63728, "ln": 25.59507, "img": "d5_0.jpg"}, {"t": "המגדל השחור", "o": "Turnul Negru", "ic": "🔭", "d": "נקודת תצפית על העיר העתיקה.", "q": "Turnul Negru, Brașov, Romania", "la": 45.64128, "ln": 25.58564, "img": "d5_1.jpg"}, {"t": "המגדל הלבן", "o": "Turnul Alb", "ic": "🔭", "d": "עוד תצפית יפה על בראשוב.", "q": "Turnul Alb, Brașov, Romania", "la": 45.64286, "ln": 25.58647, "img": "theme_brasov.jpg"}, {"t": "קניון AFI", "o": "AFI Brasov", "ic": "🛍️", "d": "אחה״צ — נסיעה ב־Uber (כ־10 ש״ח).", "q": "AFI Brașov, Romania", "la": 45.64991, "ln": 25.6104, "img": "theme_brasov.jpg"}, {"t": "ארוחת ערב — Dei Frati", "o": "Dei Frati Brasov", "ic": "🍽️", "d": "מסעדה איטלקית.", "q": "Dei Frati, Brașov, Romania", "la": 45.64052, "ln": 25.6166, "img": "theme_italian.jpg", "tag": "food"}]}, {"n": 6, "date": "13.07", "dow": "שני", "title": "סיבוב כפרי טרנסילבני", "hero": "bran", "summary": "יום נסיעה נופי בכפרי הרי פיאטרה קראיולוי — שירניה, פשטרה, מגורה, סימון, בראן ורשנוב.", "note": "<b>דגש לנהיגה:</b> העלייה לכפרים פשטרה ומגורה צרה וחלקה דרכי עפר — נוסעים לאט מאוד (20–30 קמ״ש) ונהנים מהנוף.", "stops": [{"t": "יציאה לשירניה (Șirnea)", "o": "Șirnea", "ic": "🚗", "d": "09:30 — מתחילים בנקודה הרחוקה. כ־50 דק׳ נסיעה דרך נופים ירוקים על DN73.", "q": "Șirnea, Brașov, Romania", "la": 45.47101, "ln": 25.25439, "img": "theme_village.jpg"}, {"t": "סיבוב פסטורלי בשירניה", "o": "Șirnea village", "ic": "🏔️", "d": "10:30 — כפר אקולוגי שקט. חניה ליד הכנסייה הקטנה, אוויר אלפיני ופעמוני פרות.", "q": "Biserica Șirnea, Brașov, Romania", "la": 45.4707, "ln": 25.25547, "img": "theme_village.jpg"}, {"t": "פשטרה ומגורה (כפרים תאומים)", "o": "Măgura & Peștera", "ic": "🌲", "d": "11:30 — הלב הציורי של האזור. נוף שנראה כמו גלויה מלפני 200 שנה.", "q": "Măgura, Brașov, Romania", "la": 45.52393, "ln": 25.29458, "img": "d6_2.jpg"}, {"t": "נקיקי זרנשטי (אופציונלי)", "o": "Cheile Zărnești", "ic": "🥾", "d": "הליכה רגלית קלה בטבע.", "q": "Cheile Zărneștiului, Zărnești, Romania", "la": 45.556, "ln": 25.305, "img": "d6_3.jpg", "tag": "opt"}, {"t": "עמק סימון (Șimon)", "o": "Șimon", "ic": "💧", "d": "13:30 — ירידה דרך עמק מישורי ונעים לאורך נחל זורם.", "q": "Șimon, Bran, Romania", "la": 45.49458, "ln": 25.35513, "img": "d6_4.jpg"}, {"t": "ארוחת צהריים — Brandeberg", "o": "Brandeberg Bran", "ic": "🍽️", "d": "14:15 — בקתה בווארית בפאתי בראן: שניצל ענק, נקניקיות ושטרודל תפוחים חם.", "q": "Brandeberg, Bran, Romania", "la": 45.49382, "ln": 25.35418, "img": "theme_food.jpg", "tag": "food"}, {"t": "אנדרטת חיל האוויר (אופציונלי)", "o": "IAF Helicopter Crash Memorial", "ic": "🪖", "d": "אנדרטה לזכר צוות מסוק ישראלי. ירידה קלה דרומה.", "q": "IAF Helicopter Crash Memorial, Bran, Romania", "la": 45.49, "ln": 25.36, "img": "theme_mountains.jpg", "tag": "opt"}, {"t": "רשנוב (Râșnov)", "o": "Cetatea Râșnov", "ic": "🏰", "d": "16:00 — עצירה קלה בטיילת למטה, מבט אל המצודה שעל ההר, קפה או גלידה.", "q": "Cetatea Râșnov, Râșnov, Romania", "la": 45.59059, "ln": 25.46938, "img": "d6_7.jpg"}, {"t": "חזרה למלון בבראשוב", "o": "Kronhaus Hotel Brasov", "ic": "🏨", "d": "17:15 — חזרה רעננים ושבעים, באור יום מלא.", "q": "Kronhaus Apartments & Spa, Brașov, Romania", "la": 45.64308, "ln": 25.58883, "img": "theme_brasov.jpg", "tag": "hotel"}]}, {"n": 7, "date": "14.07", "dow": "שלישי", "title": "בראשוב ← סיביו", "hero": "sighisoara", "summary": "עוזבים את בראשוב, עוצרים בסיגישוארה ובכפר סקסוני, וממשיכים ללינה בסיביו.", "note": "", "stops": [{"t": "סיגישוארה", "o": "Sighișoara", "ic": "🏰", "d": "עיירה ימי־ביניימית מוקפת חומה — אתר מורשת עולמית של אונסק״ו.", "q": "Cetatea Sighișoara, Sighișoara, Romania", "la": 46.21986, "ln": 24.79247, "img": "d7_0.jpg"}, {"t": "הכפר הסקסוני Iacobeni", "o": "Iacobeni", "ic": "🏘️", "d": "כפר סקסוני אותנטי בלב טרנסילבניה.", "q": "Iacobeni, Sibiu, Romania", "la": 46.03203, "ln": 24.73932, "img": "d7_1.jpg"}, {"t": "מלון Continental Forum Sibiu", "o": "Continental Forum Sibiu", "ic": "🏨", "d": "לינה במרכז סיביו.", "q": "Continental Forum Sibiu, Sibiu, Romania", "la": 45.79235, "ln": 24.14783, "img": "theme_sibiu.jpg", "tag": "hotel"}]}, {"n": 8, "date": "15.07", "dow": "רביעי", "title": "סיביו", "hero": "sibiu", "summary": "יום רגוע בעיר העתיקה של סיביו — פשוט ללכת לאיבוד בסמטאות.", "note": "", "stops": [{"t": "העיר העתיקה של סיביו", "o": "Piața Mare Sibiu", "ic": "🏛️", "d": "כיכרות יפהפיות, גגות עם ׳עיניים׳, גשר השקרים ואווירה קסומה.", "q": "Piața Mare, Sibiu, Romania", "la": 45.79678, "ln": 24.15183, "img": "d8_0.jpg"}]}, {"n": 9, "date": "16.07", "dow": "חמישי", "title": "כביש הטרנספגרשאן", "hero": "transfagarasan", "summary": "היום הגדול — אחד הכבישים היפים בעולם: אגם באליה, מפל, דובים וסכר וידרארו.", "note": "", "stops": [{"t": "אגם באליה (Bâlea)", "o": "Bâlea Lac", "ic": "🏔️", "d": "אגם קרחוני בגובה כ־2000 מ׳ בלב הטרנספגרשאן.", "q": "Bâlea Lac, Romania", "la": 45.60331, "ln": 24.61705, "img": "d9_0.jpg"}, {"t": "מפל Capra", "o": "Capra Waterfall", "ic": "💧", "d": "דרך המנהרה הארוכה. מפרץ חניה צמוד למפל — 5 צעדים ואתם מולו.", "q": "Cascada Capra, Transfăgărășan, Romania", "la": 45.595, "ln": 24.625, "img": "theme_mountains.jpg"}, {"t": "תצפית הדובים", "o": "Transfăgărășan bears", "ic": "🐻", "d": "מ־16:00 — דובים חומים בשולי הכביש. צופים בבטחה מתוך הרכב, מצלמים וממשיכים לאט.", "q": "Transfăgărășan, Argeș, Romania", "la": 45.43683, "ln": 24.6241, "img": "theme_bear.jpg"}, {"t": "סכר וידרארו (Vidraru)", "o": "Barajul Vidraru", "ic": "🏞️", "d": "קיר בטון אדיר מעל אגם מלאכותי. הליכה שטוחה על הסכר, פסל ׳איש הברק׳ ודוכני גלידה.", "q": "Barajul Vidraru, Romania", "la": 45.36631, "ln": 24.63147, "img": "d9_3.jpg"}, {"t": "מלון Subcarpați", "o": "Hotel Subcarpați", "ic": "🏨", "d": "לינה באזור קורטה דה ארג׳ש.", "q": "Hotel Subcarpați, Curtea de Argeș, Romania", "la": 45.14289, "ln": 24.67719, "img": "theme_mountains.jpg", "tag": "hotel"}]}, {"n": 10, "date": "17.07", "dow": "שישי", "title": "קורטה דה ארג'ש ← בוקרשט", "hero": "curtea", "summary": "מנזר מפורסם, נסיעה נופית בכפרים, צהריים בפיטשט וחזרה לבוקרשט.", "note": "החזרת הרכב עד <b>23:00</b> במלון Radisson Blu, ומשם הליכה ברגל למלון Mercure.", "stops": [{"t": "מנזר קורטה דה ארג'ש", "o": "Mănăstirea Curtea de Argeș", "ic": "⛪", "d": "מנזר לבן ויפהפה עם מגדלים מסולסלים — מקום קבורת מלכי ומלכות רומניה.", "q": "Mănăstirea Curtea de Argeș, Romania", "la": 45.1568, "ln": 24.67546, "img": "d10_0.jpg"}, {"t": "נסיעה נופית בכפרי ארג'ש", "o": "Mușătești", "ic": "🌄", "d": "כבישים צדדיים (73C) בין גבעות ירוקות, מטעים ודוכני פירות יער, דבש וגבינות.", "q": "Mușătești, Argeș, Romania", "la": 45.22816, "ln": 24.776, "img": "theme_village.jpg"}, {"t": "צהריים בפיטשט (Pitești)", "o": "Strada Victoriei Pitești", "ic": "🍽️", "d": "מדרחוב מטופח עם מזרקות, בתי קפה ומסעדות. נקודת החיבור לאוטוסטרדה לבוקרשט.", "q": "Strada Victoriei, Pitești, Romania", "la": 44.85681, "ln": 24.87339, "img": "d10_2.jpg", "tag": "food"}, {"t": "החזרת רכב — Radisson Blu", "o": "Radisson Blu Hotel Bucharest", "ic": "🚗", "d": "החזרת הרכב עד 23:00.", "q": "Radisson Blu Hotel, Calea Victoriei 63-81, Bucharest, Romania", "la": 44.44206, "ln": 26.08863, "img": "theme_bucharest.jpg"}, {"t": "מלון Mercure Bucharest City Center", "o": "Mercure Bucharest City Center", "ic": "🏨", "d": "הליכה קצרה ברגל מהראדיסון.", "q": "Mercure Bucharest City Center, Romania", "la": 44.43556, "ln": 26.09917, "img": "theme_bucharest.jpg", "tag": "hotel"}]}, {"n": 11, "date": "18.07", "dow": "שבת", "title": "חזרה הביתה", "hero": "parliament", "summary": "קניות אחרונות וטיסה הביתה.", "note": "", "stops": [{"t": "קניון AFI", "o": "AFI Cotroceni", "ic": "🛍️", "d": "נסיעה ב־Uber לקניות אחרונות.", "q": "AFI Cotroceni, Bucharest, Romania", "la": 44.43033, "ln": 26.0522, "img": "d11_0.jpg"}, {"t": "נמל התעופה", "o": "Henri Coandă Airport", "ic": "✈️", "d": "נסיעה לשדה התעופה — טיסה הביתה. תודה רומניה! 💛", "q": "Aeroportul Henri Coandă, Otopeni, Romania", "la": 44.5685, "ln": 26.06965, "img": "theme_bucharest.jpg"}]}];
+const ROUTE=[[44.436, 26.10232], [44.43972, 26.10754], [44.44536, 26.11257], [44.45164, 26.1198], [44.45688, 26.12208], [44.46486, 26.12704], [44.46588, 26.12775], [44.4727, 26.12427], [44.47846, 26.12606], [44.47895, 26.13814], [44.4907, 26.14773], [44.51928, 26.17102], [44.53789, 26.18434], [44.57977, 26.17928], [44.61674, 26.18471], [44.6467, 26.18679], [44.66581, 26.19852], [44.6863, 26.21877], [44.70858, 26.23128], [44.764, 26.25357], [44.82713, 26.21357], [44.86233, 26.18285], [44.86189, 26.15153], [44.88723, 26.12664], [44.88043, 26.06773], [44.88142, 26.03446], [44.88506, 26.0291], [44.89749, 26.00386], [44.92394, 25.98093], [44.93674, 25.96156], [44.9626, 25.96474], [44.96852, 25.96133], [44.98642, 25.92114], [45.02357, 25.83647], [45.04947, 25.8044], [45.10072, 25.75964], [45.10684, 25.74379], [45.12165, 25.72543], [45.13408, 25.71697], [45.14065, 25.70731], [45.14954, 25.69593], [45.1736, 25.68802], [45.18694, 25.67915], [45.20256, 25.66414], [45.22094, 25.64513], [45.23215, 25.63651], [45.23723, 25.63652], [45.24316, 25.63294], [45.25175, 25.62954], [45.26756, 25.62403], [45.27325, 25.62229], [45.27798, 25.62173], [45.28204, 25.61815], [45.28813, 25.61594], [45.2914, 25.60971], [45.29488, 25.59901], [45.29836, 25.5928], [45.30315, 25.58494], [45.3061, 25.57668], [45.31115, 25.57018], [45.31863, 25.56367], [45.3268, 25.56376], [45.33094, 25.56293], [45.33544, 25.5538], [45.33857, 25.55264], [45.34407, 25.54812], [45.34594, 25.54761], [45.34812, 25.54808], [45.35247, 25.55136], [45.35583, 25.5554], [45.358, 25.55426], [45.3649, 25.54668], [45.37017, 25.542], [45.38465, 25.53739], [45.38963, 25.54023], [45.39497, 25.53824], [45.39941, 25.5353], [45.40448, 25.53474], [45.40973, 25.53487], [45.41503, 25.53606], [45.42005, 25.54335], [45.42741, 25.55273], [45.43272, 25.55252], [45.44201, 25.55371], [45.44529, 25.55477], [45.45069, 25.56143], [45.45734, 25.56637], [45.46337, 25.5643], [45.46916, 25.56072], [45.47827, 25.56445], [45.48562, 25.56481], [45.49759, 25.57249], [45.50594, 25.57443], [45.5132, 25.57135], [45.51143, 25.57585], [45.51511, 25.57847], [45.51757, 25.57946], [45.51847, 25.57508], [45.51931, 25.57461], [45.51874, 25.57356], [45.52299, 25.57334], [45.52563, 25.57517], [45.5316, 25.57867], [45.53512, 25.58437], [45.53822, 25.58834], [45.5432, 25.5887], [45.55226, 25.59003], [45.56021, 25.59865], [45.56558, 25.60528], [45.57333, 25.61352], [45.58282, 25.62215], [45.59536, 25.63662], [45.60666, 25.65335], [45.61103, 25.65893], [45.61906, 25.65025], [45.62875, 25.63995], [45.63439, 25.63453], [45.64691, 25.62074], [45.65357, 25.61505], [45.65147, 25.6088], [45.65313, 25.60503], [45.6594, 25.59564], [45.67285, 25.58986], [45.67833, 25.58742], [45.68891, 25.5831], [45.69796, 25.58217], [45.71181, 25.57986], [45.72404, 25.57876], [45.74209, 25.57828], [45.75017, 25.58172], [45.76519, 25.58639], [45.77495, 25.59014], [45.79259, 25.59743], [45.81108, 25.59245], [45.81576, 25.58996], [45.8191, 25.58307], [45.82597, 25.57025], [45.83541, 25.55796], [45.84768, 25.55235], [45.85943, 25.54814], [45.87177, 25.54184], [45.88317, 25.53711], [45.8949, 25.53521], [45.90049, 25.52985], [45.90336, 25.51425], [45.9079, 25.49141], [45.9057, 25.47383], [45.90065, 25.45946], [45.89541, 25.44844], [45.89614, 25.44295], [45.89739, 25.44141], [45.89872, 25.43869], [45.90196, 25.43509], [45.90836, 25.41988], [45.91648, 25.40318], [45.92634, 25.39438], [45.93648, 25.38676], [45.94299, 25.38276], [45.94727, 25.37665], [45.95064, 25.36908], [45.95565, 25.36268], [45.96033, 25.35374], [45.9662, 25.34358], [45.97304, 25.33842], [45.98432, 25.32094], [45.99295, 25.30807], [45.99892, 25.29448], [46.00813, 25.28356], [46.01408, 25.27524], [46.02184, 25.26429], [46.02731, 25.25885], [46.03537, 25.24995], [46.03629, 25.23733], [46.0317, 25.22044], [46.03098, 25.20715], [46.03507, 25.20409], [46.04207, 25.20059], [46.04763, 25.18823], [46.05153, 25.18016], [46.06131, 25.17663], [46.06748, 25.16503], [46.07522, 25.15224], [46.08004, 25.14392], [46.08002, 25.131], [46.08758, 25.12672], [46.08996, 25.11892], [46.09774, 25.11301], [46.10212, 25.10705], [46.10589, 25.10322], [46.10876, 25.09182], [46.10603, 25.07946], [46.10673, 25.06614], [46.11196, 25.04668], [46.12014, 25.0281], [46.13117, 25.01764], [46.14021, 25.01868], [46.14706, 25.02879], [46.15549, 25.02569], [46.15632, 25.01673], [46.16105, 25.00465], [46.17108, 24.98992], [46.17953, 24.9766], [46.18631, 24.96639], [46.19272, 24.96523], [46.19781, 24.96277], [46.20462, 24.96592], [46.21123, 24.97143], [46.22073, 24.97279], [46.22758, 24.97944], [46.23463, 24.96954], [46.24246, 24.95691], [46.24044, 24.93916], [46.24076, 24.93084], [46.24157, 24.92446], [46.24196, 24.90832], [46.23922, 24.88452], [46.23832, 24.86822], [46.23616, 24.84775], [46.23297, 24.82762], [46.22546, 24.80844], [46.2208, 24.79613], [46.21889, 24.78887], [46.22073, 24.79308], [46.21882, 24.7886], [46.22188, 24.77948], [46.22427, 24.77199], [46.22208, 24.7556], [46.22548, 24.73969], [46.22242, 24.69648], [46.21764, 24.6397], [46.21923, 24.62898], [46.21956, 24.60201], [46.21655, 24.58555], [46.2163, 24.57111], [46.21476, 24.55461], [46.20416, 24.54361], [46.1925, 24.54103], [46.17688, 24.53895], [46.15051, 24.52573], [46.14021, 24.52191], [46.1329, 24.51409], [46.12408, 24.50214], [46.11669, 24.49395], [46.10732, 24.48286], [46.09833, 24.48023], [46.09426, 24.47655], [46.08661, 24.4767], [46.07947, 24.47916], [46.0679, 24.48257], [46.06661, 24.48335], [46.05806, 24.48232], [46.05159, 24.48636], [46.04842, 24.47501], [46.03918, 24.47271], [46.03465, 24.47017], [46.02798, 24.47057], [46.01786, 24.47731], [46.00635, 24.47936], [45.99731, 24.48653], [45.99059, 24.48691], [45.98555, 24.48099], [45.97304, 24.46611], [45.96327, 24.46361], [45.94786, 24.45072], [45.93514, 24.46254], [45.92701, 24.46204], [45.91044, 24.46007], [45.90174, 24.45963], [45.8883, 24.45188], [45.86917, 24.45216], [45.85751, 24.4501], [45.83877, 24.41249], [45.81974, 24.37958], [45.80989, 24.36056], [45.80004, 24.34601], [45.79403, 24.33032], [45.79211, 24.29687], [45.79592, 24.26973], [45.797, 24.24867], [45.79926, 24.23438], [45.79125, 24.22161], [45.79091, 24.20805], [45.78861, 24.19467], [45.78839, 24.18121], [45.78878, 24.17554], [45.79032, 24.16412], [45.79651, 24.15936], [45.7994, 24.15056], [45.79841, 24.15068], [45.80242, 24.15466], [45.79626, 24.15875], [45.79015, 24.16429], [45.7815, 24.16733], [45.7768, 24.1723], [45.76128, 24.19311], [45.75108, 24.20035], [45.74373, 24.20476], [45.73476, 24.21235], [45.72267, 24.22637], [45.71161, 24.24283], [45.7005, 24.24828], [45.69861, 24.26123], [45.69911, 24.26935], [45.7009, 24.27348], [45.70249, 24.2834], [45.70537, 24.29366], [45.71003, 24.30384], [45.71582, 24.32339], [45.72182, 24.33199], [45.72625, 24.34669], [45.72697, 24.36564], [45.73657, 24.37927], [45.73656, 24.38891], [45.7418, 24.40272], [45.75104, 24.4275], [45.75834, 24.44666], [45.75793, 24.45431], [45.75682, 24.46153], [45.7576, 24.50287], [45.75858, 24.53097], [45.76091, 24.53629], [45.75956, 24.5535], [45.76249, 24.57105], [45.73997, 24.57464], [45.72796, 24.574], [45.72462, 24.57362], [45.71799, 24.57005], [45.70738, 24.57035], [45.69767, 24.571], [45.6861, 24.57466], [45.67807, 24.57782], [45.66759, 24.57744], [45.67465, 24.58266], [45.67704, 24.58328], [45.67686, 24.58537], [45.67757, 24.58997], [45.67329, 24.59001], [45.66968, 24.59299], [45.6662, 24.58915], [45.66484, 24.58929], [45.6648, 24.59254], [45.6612, 24.59701], [45.65683, 24.60174], [45.65147, 24.60504], [45.6461, 24.60535], [45.63949, 24.60529], [45.63942, 24.60595], [45.64267, 24.60774], [45.64781, 24.6084], [45.65315, 24.60838], [45.64925, 24.60943], [45.64234, 24.61042], [45.63897, 24.61017], [45.63483, 24.6134], [45.63119, 24.61466], [45.62356, 24.61303], [45.61941, 24.61166], [45.61771, 24.6118], [45.61511, 24.61331], [45.61203, 24.61305], [45.61074, 24.61419], [45.60997, 24.61478], [45.60932, 24.61434], [45.61076, 24.61847], [45.61044, 24.61874], [45.60716, 24.61655], [45.6064, 24.61364], [45.60611, 24.61565], [45.60618, 24.61954], [45.60508, 24.61374], [45.60469, 24.61665], [45.60484, 24.61821], [45.60342, 24.61373], [45.59166, 24.62522], [45.59434, 24.63058], [45.59021, 24.6324], [45.59179, 24.63095], [45.59032, 24.62938], [45.58696, 24.62456], [45.58459, 24.62277], [45.58631, 24.62815], [45.58507, 24.64046], [45.58315, 24.63756], [45.58381, 24.63059], [45.58108, 24.62418], [45.57803, 24.61943], [45.57672, 24.6172], [45.57468, 24.61244], [45.57279, 24.6123], [45.56311, 24.60902], [45.56066, 24.60371], [45.55253, 24.60026], [45.54735, 24.59569], [45.54232, 24.59191], [45.5342, 24.58951], [45.52815, 24.58465], [45.51896, 24.58235], [45.51383, 24.58407], [45.50889, 24.58362], [45.50311, 24.584], [45.4957, 24.58399], [45.4906, 24.58332], [45.48415, 24.58551], [45.48004, 24.59274], [45.47603, 24.60008], [45.47137, 24.60039], [45.46216, 24.60299], [45.45403, 24.60127], [45.44233, 24.60624], [45.43908, 24.59934], [45.43792, 24.5943], [45.43368, 24.59349], [45.43572, 24.60174], [45.43457, 24.60665], [45.42627, 24.61247], [45.42108, 24.61522], [45.41957, 24.61062], [45.41844, 24.60958], [45.41636, 24.61539], [45.41159, 24.61784], [45.41074, 24.61313], [45.40644, 24.61675], [45.40109, 24.61437], [45.3956, 24.61789], [45.39117, 24.61614], [45.38164, 24.62151], [45.37343, 24.61711], [45.37008, 24.61776], [45.36957, 24.628], [45.36379, 24.62712], [45.35937, 24.62481], [45.36143, 24.62021], [45.3618, 24.6174], [45.35989, 24.62265], [45.35676, 24.62698], [45.3544, 24.63265], [45.35211, 24.63784], [45.34888, 24.63169], [45.33908, 24.63703], [45.33216, 24.63581], [45.32395, 24.63877], [45.31634, 24.64347], [45.31066, 24.6455], [45.30705, 24.65126], [45.3012, 24.65659], [45.29406, 24.6578], [45.28824, 24.65439], [45.28025, 24.65486], [45.26182, 24.65125], [45.25238, 24.65382], [45.23958, 24.66109], [45.22225, 24.66717], [45.21477, 24.6663], [45.20623, 24.66672], [45.18893, 24.67085], [45.17002, 24.67038], [45.16024, 24.67159], [45.15133, 24.67369], [45.1482, 24.67779], [45.1437, 24.67698], [45.14068, 24.67336], [45.13702, 24.66664], [45.12336, 24.65319], [45.12193, 24.65116], [45.11996, 24.65714], [45.10941, 24.65764], [45.10751, 24.65976], [45.09764, 24.66697], [45.06562, 24.67377], [45.03942, 24.69441], [45.02029, 24.70147], [45.01085, 24.72787], [44.99367, 24.74401], [44.97374, 24.75863], [44.96296, 24.75755], [44.9457, 24.77072], [44.91891, 24.80474], [44.90523, 24.82763], [44.88606, 24.85437], [44.87483, 24.87319], [44.85638, 24.8931], [44.83349, 24.92319], [44.81484, 24.95171], [44.78672, 24.99249], [44.76129, 25.05099], [44.73647, 25.11111], [44.70748, 25.15773], [44.69371, 25.25446], [44.65406, 25.34609], [44.63996, 25.40012], [44.61631, 25.44414], [44.58373, 25.46685], [44.53459, 25.52869], [44.48993, 25.61723], [44.47535, 25.69001], [44.46333, 25.74985], [44.46784, 25.81581], [44.46343, 25.87349], [44.44859, 25.90638], [44.43555, 25.97526], [44.43372, 25.99702], [44.434, 26.02076], [44.43429, 26.04503], [44.43532, 26.06288], [44.44054, 26.07292], [44.44011, 26.08125], [44.44007, 26.09239], [44.43733, 26.09837], [44.43564, 26.10265]];
+const CITIES=[{"name": "בוקרשט", "lat": 44.43614, "lng": 26.10268}, {"name": "סינאיה", "lat": 45.34555, "lng": 25.54815}, {"name": "בראשוב", "lat": 45.65251, "lng": 25.61057}, {"name": "סיגישוארה", "lat": 46.2202, "lng": 24.79345}, {"name": "סיביו", "lat": 45.79739, "lng": 24.15192}, {"name": "אגם באליה", "lat": 45.60331, "lng": 24.61705}, {"name": "קורטה דה ארג'ש", "lat": 45.14693, "lng": 24.67798}];
+const EAT=[{"city": "סינאיה", "places": [{"n": "Snow Restaurant", "d": "תפריט אירופאי עם מנות טבעוניות מסומנות בבירור."}, {"n": "Ramayana", "d": "מסעדה הודית — קארי אותנטי ופיצה טבעונית."}, {"n": "KUIB Restaurant", "d": "אוכל איכותי, אופציות טבעוניות ורו־פוד."}]}, {"city": "בראשוב", "places": [{"n": "Vegasmo", "d": "מסעדה טבעונית/צמחונית אהובה — מנות צבעוניות ומשביעות."}, {"n": "Delicious Raw", "d": "אוכל טבעוני־נא, קינוחים ומיצים טריים."}, {"n": "rawdia Brasov", "d": "אוכל טבעוני בריא, תפריט יומי משתנה ומרקים."}]}, {"city": "סיביו", "places": [{"n": "Charlie's Specialty", "d": "בראנץ' מעולה — מקושקשת טופו, שקשוקה טבעונית, פלאפל."}, {"n": "RAWISSIMA", "d": "מאפייה 100% צמחית (ללא גלוטן וסוכר) — מושלם לקינוחים לדרך."}, {"n": "Ouă și Unt", "d": "מנות טבעוניות מצוינות כמו טופו מטוגן על לחם דגנים."}]}];
+
+const waze = q=>`https://waze.com/ul?q=${encodeURIComponent(q)}&navigate=yes`;
+const gmap = q=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+const pics = q=>`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`;
+const TAGTXT = {hotel:"מלון",food:"מסעדה",opt:"אופציונלי",eve:"בערב"};
+const tagClass = t => t==='food'?'food':t==='hotel'?'hotel':t==='eve'?'eve':'opt';
+
+let _inited=false;
+function init(){
+if(_inited) return; _inited=true;
+const navEl = document.getElementById('daynav');
+navEl.insertAdjacentHTML('beforeend',
+  `<a class="overview" href="#overview"><span>🗺️</span><small>מסלול</small></a>`);
+const daysEl = document.getElementById('days');
+
+DAYS.forEach(day=>{
+  navEl.insertAdjacentHTML('beforeend',
+    `<a href="#day${day.n}">יום ${day.n}<small>${day.date}</small></a>`);
+  let stopsHtml = day.stops.map((s,i)=>`
+    <div class="stop">
+      <div class="num">${i+1}</div>
+      <div class="body">
+        <div class="title">${s.ic||'📍'} ${s.t}
+          ${s.tag?`<span class="tag ${tagClass(s.tag)}">${TAGTXT[s.tag]}</span>`:''}</div>
+        <div class="orig">${s.o}</div>
+        <img class="photo" loading="lazy" src="images/${s.img}" alt="${s.t}"
+             onerror="this.style.display='none'">
+        ${s.d?`<div class="desc">${s.d}</div>`:''}
+        <div class="acts">
+          <a class="btn btn-waze" target="_blank" rel="noopener" href="${waze(s.q)}">🚗 Waze</a>
+          <a class="btn btn-map" target="_blank" rel="noopener" href="${gmap(s.q)}">🗺️ מפות Google</a>
+          <a class="btn btn-pic" target="_blank" rel="noopener" href="${pics(s.q)}">📷 תמונות</a>
+        </div>
+      </div>
+    </div>`).join('');
+  daysEl.insertAdjacentHTML('beforeend',`
+    <section class="day" id="day${day.n}">
+      <div class="day-head">
+        ${day.hero?`<img loading="lazy" src="images/${day.hero}.jpg" alt="">`:''}
+        <div class="txt">
+          <span class="day-badge">יום ${day.n} · ${day.dow} · ${day.date}</span>
+          <h2>${day.title}</h2>
+        </div>
+      </div>
+      <div class="day-body">
+        ${day.summary?`<p class="summary">${day.summary}</p>`:''}
+        <div class="map" id="map${day.n}" data-day="${day.n}"></div>
+        <div class="stops">${stopsHtml}</div>
+        ${day.note?`<div class="note"><b>💡 לתשומת לב:</b> ${day.note}</div>`:''}
+      </div>
+    </section>`);
+});
+
+const eatEl = document.getElementById('eateries');
+EAT.forEach(g=>{
+  eatEl.insertAdjacentHTML('beforeend',`<div class="eat-city">${g.city}</div>`);
+  g.places.forEach(p=>{
+    const q = p.n+' '+g.city+' Romania';
+    eatEl.insertAdjacentHTML('beforeend',`
+      <div class="eat">
+        <div class="info"><b>${p.n}</b><span>${p.d}</span></div>
+        <div class="mini">
+          <a target="_blank" rel="noopener" title="מפות" href="${gmap(q)}">🗺️</a>
+          <a target="_blank" rel="noopener" title="תמונות" href="${pics(q)}">📷</a>
+        </div>
+      </div>`);
+  });
+});
+
+const TILE="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", ATTR='© OpenStreetMap';
+function pin(color,label){
+  return L.divIcon({className:'',html:
+    `<div style="background:${color};width:26px;height:26px;border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);
+      display:flex;align-items:center;justify-content:center;">
+      <span style="transform:rotate(45deg);color:#fff;font-weight:800;font-size:12px;">${label}</span>
+    </div>`, iconSize:[26,26], iconAnchor:[13,24], popupAnchor:[0,-22]});
+}
+
+(function(){
+  const m=L.map('routemap',{scrollWheelZoom:false});
+  L.tileLayer(TILE,{attribution:ATTR,maxZoom:18}).addTo(m);
+  L.polyline(ROUTE,{color:'#7a1f2b',weight:5,opacity:.85}).addTo(m);
+  CITIES.forEach((c,i)=>L.marker([c.lat,c.lng],{icon:pin('#b3261e',i+1)}).addTo(m)
+      .bindPopup(`<b>${i+1}. ${c.name}</b>`));
+  m.fitBounds(ROUTE,{padding:[30,30]});
+})();
+
+const built={};
+function buildMap(el){
+  const day=+el.dataset.day; if(built[day])return; built[day]=true;
+  const d=DAYS.find(x=>x.n===day);
+  const m=L.map(el,{scrollWheelZoom:false});
+  L.tileLayer(TILE,{attribution:ATTR,maxZoom:18}).addTo(m);
+  const pts=d.stops.map(s=>[s.la,s.ln]);
+  if(pts.length>1) L.polyline(pts,{color:'#7a1f2b',weight:3,opacity:.65,dashArray:'4,9'}).addTo(m);
+  d.stops.forEach((s,i)=>L.marker([s.la,s.ln],{icon:pin('#7a1f2b',i+1)}).addTo(m)
+      .bindPopup(`<b>${i+1}. ${s.t}</b><br><a target="_blank" href="${waze(s.q)}">פתח ב־Waze 🚗</a>`));
+  if(pts.length===1) m.setView(pts[0],14); else m.fitBounds(pts,{padding:[35,35]});
+  setTimeout(()=>m.invalidateSize(),200);
+}
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){buildMap(e.target);io.unobserve(e.target);}});},{rootMargin:'250px'});
+document.querySelectorAll('.map[data-day]').forEach(el=>io.observe(el));
+
+const topBtn=document.getElementById('topbtn');
+addEventListener('scroll',()=>topBtn.classList.toggle('show',scrollY>600));
+topBtn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+} /* end init */
+
+/* ---- password gate ---- */
+const PW_HASH="4afcf78d12961e97e8739e3f9159c1add75db0bd87b966ba4ed023053d46c090";
+async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function reveal(){document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='';init();}
+async function tryUnlock(){const i=document.getElementById('pw');
+  if(await sha256(i.value.trim())===PW_HASH){localStorage.setItem('ro_ok','1');reveal();}
+  else{document.getElementById('pwerr').style.display='block';i.value='';i.focus();}}
+document.getElementById('pwbtn').onclick=tryUnlock;
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+if(localStorage.getItem('ro_ok')==='1'){reveal();}else{document.getElementById('pw').focus();}
+</script>
+</body>
+</html>
