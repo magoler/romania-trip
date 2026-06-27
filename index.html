@@ -286,6 +286,13 @@ function buildMap(el){
 const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){buildMap(e.target);io.unobserve(e.target);}});},{rootMargin:'250px'});
 document.querySelectorAll('.map[data-day]').forEach(el=>io.observe(el));
 
+/* auto-jump to today's day (matches DD.MM) */
+const _now=new Date();
+const _today=String(_now.getDate()).padStart(2,'0')+'.'+String(_now.getMonth()+1).padStart(2,'0');
+const _td=DAYS.find(d=>d.date===_today);
+if(_td){ setTimeout(()=>{const el=document.getElementById('day'+_td.n);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});},350); }
+
 const topBtn=document.getElementById('topbtn');
 addEventListener('scroll',()=>topBtn.classList.toggle('show',scrollY>600));
 topBtn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
